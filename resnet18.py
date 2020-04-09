@@ -12,7 +12,7 @@ LR = 0.001
 EPOCHS = 100
 BATCH_SIZE = 32
 DATA_DIR = "data"
-MODEL_FILE = "resnet18.pkl"
+MODEL_FILE = "models/resnet18.pkl"
 
 
 def train():

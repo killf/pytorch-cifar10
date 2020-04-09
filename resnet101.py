@@ -9,8 +9,8 @@ from torchvision.models.resnet import resnet101
 from torchmirror import model, dataset
 
 LR = 0.001
-EPOCHS = 100
-BATCH_SIZE = 32
+EPOCHS = 30
+BATCH_SIZE = 8
 DATA_DIR = "data"
 MODEL_FILE = "models/resnet101.pkl"
 
@@ -28,7 +28,7 @@ def train():
     train_dataset = CIFAR10(DATA_DIR, train=True, transform=train_transforms, download=True)
     test_dataset = CIFAR10(DATA_DIR, train=False, transform=test_transforms, download=True)
 
-    train_data = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=7)
+    train_data = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=3)
     test_data = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
     net = resnet101(num_classes=10)

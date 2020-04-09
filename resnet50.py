@@ -9,7 +9,7 @@ from torchvision.models.resnet import resnet50
 from torchmirror import model, dataset
 
 LR = 0.001
-EPOCHS = 100
+EPOCHS = 30
 BATCH_SIZE = 32
 DATA_DIR = "data"
 MODEL_FILE = "models/resnet50.pkl"

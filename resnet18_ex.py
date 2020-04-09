@@ -46,6 +46,7 @@ def train():
     scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
 
     for epoch in range(EPOCHS):
+        scheduler.step()
         for step, (x, y_true) in enumerate(train_data, 1):
             if torch.cuda.is_available():
                 x = x.cuda()

@@ -38,6 +38,12 @@ optimizer = torch.optim.Adam(net.parameters(), LR, weight_decay=5e-4)
 optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
 ```
 
+使用学习率衰减策略，初始学习率为`0.1`，经过500个EPOCH后在训练集上的准确率为`0.8432`，如下：
+```
+optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
+scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
+```
+
 **参考资料**
 * 权重衰减与学习率衰减:https://blog.csdn.net/program_developer/article/details/80867468
 * Pytorch中的学习率衰减及其用法:https://www.jianshu.com/p/26a7dbc15246

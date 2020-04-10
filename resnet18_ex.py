@@ -46,7 +46,7 @@ def train():
     scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
 
     for epoch in range(EPOCHS):
-        scheduler.step()
+        net.train()
         for step, (x, y_true) in enumerate(train_data, 1):
             if torch.cuda.is_available():
                 x = x.cuda()
@@ -64,6 +64,7 @@ def train():
                 acc = (y_pred == y_true).float().mean()
                 print(f"Epoch:{epoch} Step:{step}, Loss:{loss:05f}, Acc:{acc:05f}")
 
+        net.eval()
         with torch.no_grad():
             acc, count = 0, 0
             for x, y_true in test_data:
@@ -80,6 +81,7 @@ def train():
             print(f"[VAL]Epoch:{epoch}, Acc:{acc:05f}")
             print()
 
+        scheduler.step(epoch)
         torch.save(net.state_dict(), MODEL_FILE)
 
 

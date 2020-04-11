@@ -48,6 +48,8 @@ scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
 
 然后调整学习率，`[0,20]`为`0.1`，`[20,40]`为`0.01`，`[40,60]`为`0.001`，训练60个EPOCH后在测试集上的准确率为`0.9364`。
 
+更换`dpn92`算法后，在测试集上的准确率为`0.9432`。
+
 **参考资料**
 * 权重衰减与学习率衰减:https://blog.csdn.net/program_developer/article/details/80867468
 * Pytorch中的学习率衰减及其用法:https://www.jianshu.com/p/26a7dbc15246

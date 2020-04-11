@@ -62,6 +62,10 @@ def main():
             torch.save(net.state_dict(), MODEL_FILE)
             best_acc = acc
 
+    print(f"best_acc:{best_acc:05f}")
+    if os.path.exists(MODEL_FILE):
+        os.rename(MODEL_FILE, f"{MODEL_FILE}.{best_acc:05f}")
+
 
 def train_one_epoch(epoch, data_loader, net, optimizer, criterion, scheduler, device):
     net.train()

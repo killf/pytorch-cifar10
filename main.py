@@ -16,7 +16,7 @@ START_EPOCH = 0
 DATA_DIR = "data"
 BATCH_SIZE = 128
 NUM_WORKERS = 16
-MODEL_NAME = "resnet18"
+MODEL_NAME = "dpn92"
 MODEL_FILE = f"output/{MODEL_NAME}.pkl"
 SEED = 0
 set_seed(SEED)
@@ -88,6 +88,7 @@ def train_one_epoch(epoch, data_loader, net, optimizer, criterion, scheduler, de
             print(f"Epoch:{epoch} Step:{step}, Loss:{loss.item():05f}, Acc:{correct / total:05f}")
 
     scheduler.step()
+    return correct / total
 
 
 def test_one_epoch(epoch, data_loader, net, device):

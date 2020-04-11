@@ -69,7 +69,7 @@ class DPN(nn.Module):
         return out
 
 
-def DPN26():
+def dpn26():
     cfg = {
         'in_planes': (96, 192, 384, 768),
         'out_planes': (256, 512, 1024, 2048),
@@ -79,7 +79,7 @@ def DPN26():
     return DPN(cfg)
 
 
-def DPN92():
+def dpn92():
     cfg = {
         'in_planes': (96, 192, 384, 768),
         'out_planes': (256, 512, 1024, 2048),

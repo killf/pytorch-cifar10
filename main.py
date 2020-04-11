@@ -17,7 +17,7 @@ DATA_DIR = "data"
 DATASET = "CIFAR10"
 BATCH_SIZE = 128
 NUM_WORKERS = 16
-MODEL_NAME = "dpn92"
+MODEL_NAME = "resnet18"
 MODEL_FILE = f"output/{MODEL_NAME}.pkl"
 SEED = 0
 set_seed(SEED)

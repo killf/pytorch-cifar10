@@ -5,14 +5,14 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision.datasets.cifar import CIFAR10
 import torchvision.transforms as transforms
-from torchvision.models.resnet import resnet101
+from torchvision.models.resnet import resnet34
 from torchmirror import model, dataset
 
 LR = 0.001
 EPOCHS = 30
-BATCH_SIZE = 8
-DATA_DIR = "data"
-MODEL_FILE = "models/resnet101.pkl"
+BATCH_SIZE = 32
+DATA_DIR = "../data"
+MODEL_FILE = "models/resnet34.pkl"
 
 
 def train():
@@ -28,10 +28,10 @@ def train():
     train_dataset = CIFAR10(DATA_DIR, train=True, transform=train_transforms, download=True)
     test_dataset = CIFAR10(DATA_DIR, train=False, transform=test_transforms, download=True)
 
-    train_data = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=3)
+    train_data = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=7)
     test_data = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
-    net = resnet101(num_classes=10)
+    net = resnet34(num_classes=10)
     if torch.cuda.is_available():
         net = net.cuda()
 

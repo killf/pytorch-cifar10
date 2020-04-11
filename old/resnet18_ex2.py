@@ -1,20 +1,16 @@
-import os
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.optim.lr_scheduler import LambdaLR, MultiStepLR
 from torch.utils.data import DataLoader
 from torchvision.datasets.cifar import CIFAR10
 import torchvision.transforms as transforms
-from resnet import ResNet18 as resnet18
-from torchmirror import model, dataset
+from old.resnet import ResNet18 as resnet18
 import torch.backends.cudnn as cudnn
 
 LR = 0.1
-EPOCHS = 5
+EPOCHS = 10
 BATCH_SIZE = 128
 NUM_WORKERS = 2
-DATA_DIR = "data"
+DATA_DIR = "../data"
 MODEL_FILE = "models/resnet18_ex2.pkl"
 
 

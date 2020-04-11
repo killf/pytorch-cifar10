@@ -6,8 +6,8 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR10
 import torchvision.transforms as transforms
 
-from models.resnet import resnet18
 from utils import *
+import models
 
 LR = 0.1
 LR_MILESTONES = [20, 40, 60]
@@ -16,7 +16,8 @@ START_EPOCH = 0
 DATA_DIR = "data"
 BATCH_SIZE = 128
 NUM_WORKERS = 16
-MODEL_FILE = "output/resnet18.pkl"
+MODEL_NAME = "resnet18"
+MODEL_FILE = f"output/{MODEL_NAME}.pkl"
 SEED = 0
 set_seed(SEED)
 
@@ -42,7 +43,7 @@ def main():
                            worker_init_fn=worker_init_fn)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = resnet18().to(device)
+    net = models.__dict__[MODEL_NAME]().to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)

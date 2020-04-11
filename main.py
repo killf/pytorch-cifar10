@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import MultiStepLR
@@ -9,11 +10,13 @@ from models.resnet import resnet18
 from utils import *
 
 LR = 0.1
-EPOCHS = 50
+LR_MILESTONES = [20, 40, 60]
+EPOCHS = 80
 START_EPOCH = 0
 DATA_DIR = "data"
 BATCH_SIZE = 128
 NUM_WORKERS = 16
+MODEL_FILE = "output/resnet18.pkl"
 SEED = 0
 set_seed(SEED)
 
@@ -43,11 +46,20 @@ def main():
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
-    scheduler = MultiStepLR(optimizer, milestones=[10, 20, 30], gamma=0.1)
+    scheduler = MultiStepLR(optimizer, milestones=LR_MILESTONES, gamma=0.1)
 
+    best_acc = 0
     for epoch in range(START_EPOCH, START_EPOCH + EPOCHS):
         train_one_epoch(epoch, train_data, net, optimizer, criterion, scheduler, device)
-        test_one_epoch(epoch, test_data, net, device)
+        acc = test_one_epoch(epoch, test_data, net, device)
+
+        if acc > best_acc:
+            folder = os.path.dirname(MODEL_FILE)
+            if not os.path.exists(folder):
+                os.makedirs(folder)
+
+            torch.save(net.state_dict(), MODEL_FILE)
+            best_acc = acc
 
 
 def train_one_epoch(epoch, data_loader, net, optimizer, criterion, scheduler, device):
@@ -86,8 +98,11 @@ def test_one_epoch(epoch, data_loader, net, device):
             correct += (y_pred == y_true).float().sum().item()
             total += y_true.size(0)
 
-        print(f"[VAL]Epoch:{epoch}, Acc:{correct / total:05f}")
+        acc = correct / total
+        print(f"[VAL]Epoch:{epoch}, Acc:{acc:05f}")
         print()
+
+    return acc
 
 
 if __name__ == '__main__':

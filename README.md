@@ -44,7 +44,7 @@ optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=
 scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
 ```
 
-逐步优化后，训练集上准确率达到`0.9157`。
+逐步优化后，训练集上准确率达到`0.9157`，添加随机旋转、随机亮度后达到`0.9293`。
 
 然后调整学习率，`[0,20]`为`0.1`，`[20,40]`为`0.01`，`[40,60]`为`0.001`，训练60个EPOCH后在测试集上的准确率为`0.9364`。
 

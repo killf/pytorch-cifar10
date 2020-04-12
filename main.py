@@ -9,7 +9,7 @@ import torchvision.datasets
 from utils import *
 import models
 
-LR = 0.1
+LR = 0.01
 LR_MILESTONES = [20, 40, 60]
 EPOCHS = 80
 START_EPOCH = 0
@@ -17,7 +17,7 @@ DATA_DIR = "data"
 DATASET = "CIFAR10"
 BATCH_SIZE = 128
 NUM_WORKERS = 16
-MODEL_NAME = "resnet18"
+MODEL_NAME = "conv_net_003"
 MODEL_FILE = f"output/{MODEL_NAME}.pkl"
 SEED = 0
 set_seed(SEED)

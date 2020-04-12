@@ -63,6 +63,11 @@ scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
 
 容易分类错误的类别：(plane,car,ship,truck)，(bird, cat, deer, dog, frog, horse), (bird, plane)
 
+**其他**
+
+* 学习率太大，容易导致`nan`，可以考虑减小学习率，或者添加BN层
+* 最后一层的感受野应当不小于对象的大小
+
 **参考资料**
 * 权重衰减与学习率衰减:https://blog.csdn.net/program_developer/article/details/80867468
 * Pytorch中的学习率衰减及其用法:https://www.jianshu.com/p/26a7dbc15246

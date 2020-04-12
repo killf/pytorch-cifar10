@@ -50,6 +50,19 @@ scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
 
 更换`dpn92`算法后，在测试集上的准确率为`0.9432`。
 
+更换`dpn26`算法后，在测试集上的准确率为`0.9298`。
+
+
+**数据集**
+
+观测测试数据集，发现里面存在极少的错误标注，如把青蛙标记成猫。
+
+训练集的标注都是正确的，没有发现错误。
+
+有些目标非常小，只有几个像素，还有一些非常模糊。
+
+容易分类错误的类别：(plane,car,ship,truck)，(bird, cat, deer, dog, frog, horse), (bird, plane)
+
 **参考资料**
 * 权重衰减与学习率衰减:https://blog.csdn.net/program_developer/article/details/80867468
 * Pytorch中的学习率衰减及其用法:https://www.jianshu.com/p/26a7dbc15246

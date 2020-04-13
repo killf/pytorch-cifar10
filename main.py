@@ -17,7 +17,7 @@ DATA_DIR = "data"
 DATASET = "CIFAR10"
 BATCH_SIZE = 128
 NUM_WORKERS = 16
-MODEL_NAME = "conv_net_003"
+MODEL_NAME = "senet18"
 MODEL_FILE = f"output/{MODEL_NAME}.pkl"
 SEED = 0
 set_seed(SEED)

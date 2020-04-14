@@ -52,6 +52,7 @@ scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
 
 更换`dpn26`算法后，在测试集上的准确率为`0.9298`。
 
+更换`senet18`算法后，在测试集上的准确率为`0.9138`。
 
 **数据集**
 

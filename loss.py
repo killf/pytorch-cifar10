@@ -1,4 +1,6 @@
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 
 
@@ -75,3 +77,72 @@ def find_lr(data_loader, net, criterion, device, min_lr=1e-5, max_lr=10, gamma=1
     net.load_state_dict(origin_model)
     idx = np.argmin(loss_ls)
     return lr_ls[idx]
+
+
+class FocalLoss(nn.Module):
+    def __init__(self, alpha=1, gamma=4, reduction="mean", numeric_stable_mode=True):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.reduction = reduction
+        self.numeric_stable_mode = numeric_stable_mode
+
+    def forward(self, inputs, targets):
+        gt = F.one_hot(targets, num_classes=inputs.size(1))
+        pred = F.softmax(inputs, dim=-1)
+        if self.numeric_stable_mode:
+            pred = torch.clamp(pred, min=1e-7, max=1. - 1e-7)
+
+        loss = -self.alpha * gt * torch.log(pred) * torch.pow(1. - pred, self.gamma)
+        loss = torch.sum(loss, dim=-1)
+
+        if self.reduction == "mean":
+            loss = torch.mean(loss)
+        elif self.reduction == "sum":
+            loss = torch.sum(loss)
+
+        return loss
+
+
+class OHEMLoss(nn.Module):
+    def __init__(self, reduction="mean", numeric_stable_mode=True):
+        super(OHEMLoss, self).__init__()
+        self.reduction = reduction
+        self.numeric_stable_mode = numeric_stable_mode
+
+    def forward(self, inputs, targets):
+        gt = F.one_hot(targets, num_classes=inputs.size(1))
+        pred = F.softmax(inputs, dim=-1)
+        if self.numeric_stable_mode:
+            pred = torch.clamp(pred, min=1e-7, max=1. - 1e-7)
+
+        loss = -1 * gt * torch.log(pred)
+        loss = torch.sum(loss, dim=-1)
+
+        pred = torch.argmax(pred, dim=-1)
+        weight = (pred != targets).type_as(loss)
+        weight = torch.clamp(weight, min=0.3, max=0.7)
+        loss = weight * loss
+
+        if self.reduction == "mean":
+            loss = torch.mean(loss)
+        elif self.reduction == "sum":
+            loss = torch.sum(loss)
+
+        return loss
+
+
+if __name__ == '__main__':
+    a = torch.from_numpy(np.array([1, 3, 3], dtype=np.int64))
+    b = torch.from_numpy(np.array([[0.7, 0.0, 0.2, 0.0, 0.0, 0.1, 0.0, 0.0],
+                                   [0.0, 0.0, 0.3, 0.4, 0.3, 0.0, 0.0, 0.0],
+                                   [0.0, 0.0, 0.2, 0.7, 0.1, 0.0, 0.0, 0.0]], dtype=np.float32))
+
+    loss1 = F.cross_entropy(b, a)
+    print(loss1)
+
+    loss2 = FocalLoss(gamma=4)(b, a)
+    print(loss2)
+
+    loss3 = OHEMLoss()(b, a)
+    print(loss3)

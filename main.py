@@ -12,14 +12,13 @@ import models
 
 LR = 0.1
 LR_MILESTONES = [20, 40, 60]
-STEP_SIZE = 5
 EPOCHS = 80
 START_EPOCH = 0
 DATA_DIR = "data"
 DATASET = "CIFAR10"
 BATCH_SIZE = 128
 NUM_WORKERS = 16
-MODEL_NAME = "TResnetXL"
+MODEL_NAME = "resnet18"
 MODEL_FILE = f"output/{MODEL_NAME}.pkl"
 SEED = 0
 set_seed(SEED)
@@ -51,24 +50,15 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     net = models.__dict__[MODEL_NAME](pretrained=True).to(device)
 
-    criterion = nn.CrossEntropyLoss()
+    # criterion = nn.CrossEntropyLoss()
+    criterion = FocalLoss()
+    # criterion = OHEMLoss()
     optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9)
-    # scheduler = MultiStepLR(optimizer, milestones=LR_MILESTONES, gamma=0.1)
-
-    lr = find_lr(train_data, net, criterion, device)
-    scheduler = CycleLR(optimizer, min_lr=lr / 10, max_lr=lr, final_lr=lr / 100, step_size=STEP_SIZE)
-    print(f"find_lr:{lr:05f}")
+    scheduler = MultiStepLR(optimizer, milestones=LR_MILESTONES, gamma=0.1)
 
     best_acc = 0
     for epoch in range(START_EPOCH, START_EPOCH + EPOCHS):
-        if epoch % (STEP_SIZE * 2) == 0 and epoch > START_EPOCH:
-            lr = find_lr(train_data, net, criterion, device)
-            print(f"find_lr:{lr:05f}")
-            scheduler.max_lr = lr
-            scheduler.min_lr = lr / 10
-            scheduler.final_lr = lr / 100
-
-        train_one_epoch(epoch, train_data, net, optimizer, criterion, scheduler, device)
+        train_one_epoch(epoch, train_data, net, optimizer, criterion, device)
         test_acc = test_one_epoch(epoch, test_data, net, device)
 
         if test_acc > best_acc:
@@ -79,16 +69,17 @@ def main():
             torch.save(net.state_dict(), MODEL_FILE)
             best_acc = test_acc
 
+        scheduler.step()
+
     print(f"best_acc:{best_acc:05f}")
     if os.path.exists(MODEL_FILE):
         os.rename(MODEL_FILE, f"{MODEL_FILE}.{best_acc:05f}")
 
 
-def train_one_epoch(epoch, data_loader, net, optimizer, criterion, scheduler, device):
+def train_one_epoch(epoch, data_loader, net, optimizer, criterion, device):
     net.train()
     correct, total = 0, 0
 
-    scheduler.step()
     for step, (x, y_true) in enumerate(data_loader):
         x, y_true = x.to(device), y_true.to(device)
 
@@ -106,7 +97,6 @@ def train_one_epoch(epoch, data_loader, net, optimizer, criterion, scheduler, de
         if step % 100 == 0:
             print(f"Epoch:{epoch} Step:{step}, Loss:{loss.item():05f}, Acc:{correct / total:05f}")
 
-    # scheduler.step()
     return correct / total
 
 

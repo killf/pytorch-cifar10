@@ -17,7 +17,7 @@ DATA_DIR = "data"
 DATASET = "CIFAR10"
 BATCH_SIZE = 128
 NUM_WORKERS = 16
-MODEL_NAME = "preact_resnet18"
+MODEL_NAME = "TResnetXL"
 MODEL_FILE = f"output/{MODEL_NAME}.pkl"
 SEED = 0
 set_seed(SEED)
@@ -30,11 +30,11 @@ def main():
         transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+        # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
     ])
     test_transforms = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+        # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
     ])
 
     dataset = torchvision.datasets.__dict__[DATASET]
@@ -47,11 +47,13 @@ def main():
                            worker_init_fn=worker_init_fn)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = models.__dict__[MODEL_NAME]().to(device)
+    net = models.__dict__[MODEL_NAME](pretrained=True).to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
     scheduler = MultiStepLR(optimizer, milestones=LR_MILESTONES, gamma=0.1)
+    # optimizer = torch.optim.Adam(net.parameters(), lr=LR, weight_decay=5e-4)
+    # scheduler = MultiStepLR(optimizer, milestones=LR_MILESTONES, gamma=0.5)
 
     best_acc = 0
     for epoch in range(START_EPOCH, START_EPOCH + EPOCHS):

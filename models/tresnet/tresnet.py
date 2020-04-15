@@ -3,11 +3,23 @@ from functools import partial
 import torch
 import torch.nn as nn
 from collections import OrderedDict
+
+from torch.hub import load_state_dict_from_url
+
 from models.tresnet.layers.anti_aliasing import AntiAliasDownsampleLayer
 from .layers.avg_pool import FastGlobalAvgPool2d
 from .layers.squeeze_and_excite import SEModule
 from models.tresnet.layers.space_to_depth import SpaceToDepthModule
 from inplace_abn import InPlaceABN
+
+model_urls = {
+    "tresnet_m.pth": "https://miil-public-eu.oss-eu-central-1.aliyuncs.com/model-zoo/tresnet/tresnet_m.pth",
+    "tresnet_m_448": "https://miil-public-eu.oss-eu-central-1.aliyuncs.com/model-zoo/tresnet/tresnet_m_448.pth",
+    "tresnet_l": "https://miil-public-eu.oss-eu-central-1.aliyuncs.com/model-zoo/tresnet/tresnet_l.pth",
+    "tresnet_l_448": "https://miil-public-eu.oss-eu-central-1.aliyuncs.com/model-zoo/tresnet/tresnet_l_448.pth",
+    "tresnet_xl": "https://miil-public-eu.oss-eu-central-1.aliyuncs.com/model-zoo/tresnet/tresnet_xl.pth",
+    "tresnet_xl_448": "https://miil-public-eu.oss-eu-central-1.aliyuncs.com/model-zoo/tresnet/tresnet_xl_448.pth"
+}
 
 
 def IABN2Float(module: nn.Module) -> nn.Module:
@@ -192,35 +204,42 @@ class TResNet(nn.Module):
         return logits
 
 
-def TResnetM(model_params):
+def _t_resnet(layers, num_classes, in_chans, width_factor, remove_aa_jit, pretrained, progress):
+    model = TResNet(layers=layers, num_classes=num_classes, in_chans=in_chans, width_factor=width_factor,
+                    remove_aa_jit=remove_aa_jit)
+    if pretrained:
+        if isinstance(pretrained, str):
+            url = pretrained
+        else:
+            url = model_urls["tresnet_xl"]
+
+        state_dict = load_state_dict_from_url(url, progress=progress)["model"]
+        if num_classes != 1000:
+            w, b = state_dict['head.fc.weight'], state_dict['head.fc.bias']
+            state_dict['head.fc.weight'] = torch.normal(mean=0, std=0.001, size=(num_classes, w.size(1)), dtype=w.dtype)
+            state_dict['head.fc.bias'] = torch.zeros(num_classes, dtype=b.dtype)
+        model.load_state_dict(state_dict, strict=True)
+
+    return model
+
+
+def TResnetM(num_classes=10, in_chans=3, remove_aa_jit=False, pretrained=False, progress=True):
     """ Constructs a medium TResnet model.
     """
-    in_chans = 3
-    num_classes = model_params['num_classes']
-    remove_aa_jit = model_params['remove_aa_jit']
-    model = TResNet(layers=[3, 4, 11, 3], num_classes=num_classes, in_chans=in_chans,
-                    remove_aa_jit=remove_aa_jit)
-    return model
+    return _t_resnet([3, 4, 11, 3], num_classes=num_classes, in_chans=in_chans, width_factor=1.0,
+                     remove_aa_jit=remove_aa_jit, pretrained=pretrained, progress=progress)
 
 
-def TResnetL(model_params):
+def TResnetL(num_classes=10, in_chans=3, remove_aa_jit=False, pretrained=False, progress=True):
     """ Constructs a large TResnet model.
     """
-    in_chans = 3
-    num_classes = model_params['num_classes']
-    remove_aa_jit = model_params['remove_aa_jit']
-    model = TResNet(layers=[4, 5, 18, 3], num_classes=num_classes, in_chans=in_chans, width_factor=1.2,
-                    remove_aa_jit=remove_aa_jit)
-    return model
+    return _t_resnet([4, 5, 18, 3], num_classes=num_classes, in_chans=in_chans, width_factor=1.2,
+                     remove_aa_jit=remove_aa_jit, pretrained=pretrained, progress=progress)
 
 
-def TResnetXL(model_params):
+def TResnetXL(num_classes=10, in_chans=3, remove_aa_jit=False, pretrained=False, progress=True):
     """ Constructs an extra-large TResnet model.
     """
-    in_chans = 3
-    num_classes = model_params['num_classes']
-    remove_aa_jit = model_params['remove_aa_jit']
-    model = TResNet(layers=[4, 5, 24, 3], num_classes=num_classes, in_chans=in_chans, width_factor=1.3,
-                    remove_aa_jit=remove_aa_jit)
-
-    return model
+    return _t_resnet([4, 5, 24, 3], num_classes=num_classes, in_chans=in_chans, width_factor=1.3,
+                     remove_aa_jit=remove_aa_jit,
+                     pretrained=pretrained, progress=progress)

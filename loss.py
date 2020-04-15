@@ -121,7 +121,8 @@ class OHEMLoss(nn.Module):
 
         pred = torch.argmax(pred, dim=-1)
         weight = (pred != targets).type_as(loss)
-        weight = torch.clamp(weight, min=0.3, max=0.7)
+        # weight = torch.clamp(weight, min=0.3, max=0.7)
+        weight = weight + 1
         loss = weight * loss
 
         if self.reduction == "mean":

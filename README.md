@@ -54,6 +54,16 @@ scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
 
 更换`senet18`算法后，在测试集上的准确率为`0.9138`。
 
+**训练技巧**
+
+首先，选择一个合适的学习率，先从该学习率的1/10开始，逐步增加学习，到达顶峰后再逐步减小回原来的学习率，如此反复几次后，再把学习率逐步降低到1/100，再训练几个EPOCH后停止。
+
+大学习率可以起到正则化作用，防止过拟合。
+
+对困难样本，采用难例挖掘，提高损失中的比重。
+
+将预训练的参数当做模型的初始化参数，当做一个新模型的训练。
+
 **数据集**
 
 观测测试数据集，发现里面存在极少的错误标注，如把青蛙标记成猫。
@@ -68,8 +78,15 @@ scheduler = MultiStepLR(optimizer, milestones=[150, 250, 350], gamma=0.1)
 
 * 学习率太大，容易导致`nan`，可以考虑减小学习率，或者添加BN层
 * 最后一层的感受野应当不小于对象的大小
+* 如何寻找最佳学习率？即使损失下降最快的学习率
 
 **参考资料**
 * 权重衰减与学习率衰减:https://blog.csdn.net/program_developer/article/details/80867468
 * Pytorch中的学习率衰减及其用法:https://www.jianshu.com/p/26a7dbc15246
 * https://github.com/kuangliu/pytorch-cifar
+* 如果设置学习率
+	* https://blog.csdn.net/qq_38906523/article/details/80590314
+	* https://blog.csdn.net/m0_37477175/article/details/89400436
+	* https://blog.csdn.net/m0_37477175/article/details/89395050
+	* https://blog.csdn.net/qq_38410428/article/details/88061738
+	* https://blog.csdn.net/m0_37477175/article/details/89395050

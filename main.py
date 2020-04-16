@@ -6,7 +6,6 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import torchvision.datasets
 
-from data_loader import DataPreLoader
 from utils import *
 from loss import *
 import models
@@ -22,15 +21,13 @@ NUM_WORKERS = 16
 MODEL_NAME = "resnet18"
 MODEL_FILE = f"output/{MODEL_NAME}.pkl"
 LOG_FILE = "log.txt"
-SEED = 0
-set_seed(SEED)
 
 
 def main():
     train_transforms = transforms.Compose([
         transforms.RandomCrop(32, padding=4),
-        # transforms.RandomRotation(30),
-        # transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.3),
+        transforms.RandomRotation(30),
+        transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.3),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
@@ -44,22 +41,27 @@ def main():
     train_dataset = dataset(DATA_DIR, train=True, transform=train_transforms, download=True)
     test_dataset = dataset(DATA_DIR, train=False, transform=test_transforms, download=True)
 
-    train_data = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS,
-                            worker_init_fn=worker_init_fn)
-    test_data = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS,
-                           worker_init_fn=worker_init_fn)
+    train_data = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+    test_data = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     net = models.__dict__[MODEL_NAME](pretrained=False).to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9)
-    scheduler = MultiStepLR(optimizer, milestones=LR_MILESTONES, gamma=0.1)
+    # optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9, weight_decay=5e-4)
+    # scheduler = MultiStepLR(optimizer, milestones=LR_MILESTONES, gamma=0.1)
 
     best_acc = 0
     open(LOG_FILE, "w", encoding="utf8")
 
     for epoch in range(START_EPOCH, START_EPOCH + EPOCHS):
+        if epoch == 0:
+            optimizer = torch.optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+        elif epoch == 135:
+            optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
+        elif epoch == 185:
+            optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
+
         train_acc = train_one_epoch(epoch, train_data, net, optimizer, criterion, device)
         test_acc = test_one_epoch(epoch, test_data, net, device)
 
@@ -74,7 +76,7 @@ def main():
             torch.save(net.state_dict(), MODEL_FILE)
             best_acc = test_acc
 
-        scheduler.step()
+        # scheduler.step()
 
     print(f"best_acc:{best_acc:05f}")
     if os.path.exists(MODEL_FILE):

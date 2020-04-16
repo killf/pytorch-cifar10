@@ -6,20 +6,22 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import torchvision.datasets
 
+from data_loader import DataPreLoader
 from utils import *
 from loss import *
 import models
 
 LR = 0.1
-LR_MILESTONES = [20, 40, 60]
-EPOCHS = 80
+LR_MILESTONES = [135, 185, 240]
+EPOCHS = 240
 START_EPOCH = 0
 DATA_DIR = "data"
 DATASET = "CIFAR10"
 BATCH_SIZE = 128
 NUM_WORKERS = 16
-MODEL_NAME = "TResnetXL"
+MODEL_NAME = "resnet18"
 MODEL_FILE = f"output/{MODEL_NAME}.pkl"
+LOG_FILE = "log.txt"
 SEED = 0
 set_seed(SEED)
 
@@ -27,15 +29,15 @@ set_seed(SEED)
 def main():
     train_transforms = transforms.Compose([
         transforms.RandomCrop(32, padding=4),
-        transforms.RandomRotation(30),
-        transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.3),
+        # transforms.RandomRotation(30),
+        # transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.3),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
-        # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
     ])
     test_transforms = transforms.Compose([
         transforms.ToTensor(),
-        # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
     ])
 
     dataset = torchvision.datasets.__dict__[DATASET]
@@ -48,16 +50,21 @@ def main():
                            worker_init_fn=worker_init_fn)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = models.__dict__[MODEL_NAME](pretrained=True).to(device)
+    net = models.__dict__[MODEL_NAME](pretrained=False).to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(net.parameters(), lr=LR, momentum=0.9)
     scheduler = MultiStepLR(optimizer, milestones=LR_MILESTONES, gamma=0.1)
 
     best_acc = 0
+    open(LOG_FILE, "w", encoding="utf8")
+
     for epoch in range(START_EPOCH, START_EPOCH + EPOCHS):
-        train_one_epoch(epoch, train_data, net, optimizer, criterion, device)
+        train_acc = train_one_epoch(epoch, train_data, net, optimizer, criterion, device)
         test_acc = test_one_epoch(epoch, test_data, net, device)
+
+        with open(LOG_FILE, "a", encoding="utf8") as f:
+            f.write(f"{epoch}\t{train_acc}\t{test_acc}\n")
 
         if test_acc > best_acc:
             folder = os.path.dirname(MODEL_FILE)
@@ -126,6 +133,7 @@ def print_config():
     print(f"workers: {NUM_WORKERS}")
     print(f"batch_size: {BATCH_SIZE}")
     print(f"output: {MODEL_FILE}")
+    print(f"log: {LOG_FILE}")
     print()
 
 

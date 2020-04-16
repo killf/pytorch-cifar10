@@ -136,7 +136,8 @@ class TResNet(nn.Module):
         # TResnet stages
         self.inplanes = int(64 * width_factor)
         self.planes = int(64 * width_factor)
-        conv1 = conv2d_ABN(in_chans * 16, self.planes, stride=1, kernel_size=3)
+        # conv1 = conv2d_ABN(in_chans * 16, self.planes, stride=1, kernel_size=3)
+        conv1 = conv2d_ABN(in_chans, self.planes, stride=1, kernel_size=3)
         layer1 = self._make_layer(BasicBlock, self.planes, layers[0], stride=1, use_se=True,
                                   anti_alias_layer=anti_alias_layer)  # 56x56
         layer2 = self._make_layer(BasicBlock, self.planes * 2, layers[1], stride=2, use_se=True,
@@ -148,7 +149,7 @@ class TResNet(nn.Module):
 
         # body
         self.body = nn.Sequential(OrderedDict([
-            ('SpaceToDepth', space_to_depth),
+            # ('SpaceToDepth', space_to_depth),
             ('conv1', conv1),
             ('layer1', layer1),
             ('layer2', layer2),
@@ -199,6 +200,7 @@ class TResNet(nn.Module):
 
     def forward(self, x):
         x = self.body(x)
+
         self.embeddings = self.global_pool(x)
         logits = self.head(self.embeddings)
         return logits
